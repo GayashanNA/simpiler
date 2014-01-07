@@ -1,7 +1,6 @@
 package lexer;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Hashtable;
 
 /**
@@ -9,70 +8,87 @@ import java.util.Hashtable;
  */
 public class Lexer {
     public int line = 1;
-    private char peek = ' ' ;
-    private InputStream in;
-    private Hashtable words = new Hashtable() ;
-    void reserve(Id t) { words.put (t.lexeme, t) ; }
+    private char peek = ' ';
+    private final Hashtable words = new Hashtable();
 
-    public Lexer(){
-        in = System.in;
-        reserve( new Id(Tag.INT, "int") ) ;
-        reserve ( new Id(Tag.FLOAT, "float") ) ;
+    /**
+     * Reserve a word in the symbol table
+     *
+     * @param t
+     */
+    void reserve(Id t) {
+        words.put(t.lexeme, t);
     }
 
+    /***
+     * Read next character from input stream
+     * @throws IOException
+     */
+    private void readch() throws IOException {
+        this.peek = (char) System.in.read();
+    }
+
+    public Lexer() {
+        reserve(new Id(Tag.INT, "int"));
+        reserve(new Id(Tag.FLOAT, "float"));
+    }
+
+    /**
+     * Conduct scanning of input stream and tokenize
+     *
+     * @return
+     * @throws IOException
+     */
     public Token scan() throws IOException {
-        for( ; ; peek = (char)in.read() ) {
-            if ( peek == ' '|| peek == '\t'||peek == '\r' ){  continue ;}
-            else if(peek == '\n' ) { line = line + 1;
+        for (; ; readch()) {
+            if (peek == ' ' || peek == '\t' || peek == '\r') {      //ignore spaces, tabs and blanks
                 continue;
+            } else if (peek == '\n') {  //count number of lines, later used in error reporting
+                line = line + 1;
+            } else {
+                break;
             }
-            else{ break;}
         }
 
-        if ( Character. isLetter (peek) ) {
-            StringBuffer b = new StringBuffer();
-
+        //if token is an id
+        if (Character.isLetter(peek)) {
+            StringBuilder b = new StringBuilder();
             do {
-                b.append (peek) ;
-                peek = (char)in.read() ;
-            } while( Character.isLetterOrDigit(peek));
-
+                b.append(this.peek);
+                readch();
+            } while (Character.isLetterOrDigit(this.peek));
             String s = b.toString();
-            Id w = (Id) words. get (s) ;
-            if ( w != null) {
-                return w;
-            }
-            if(s.length()>1) throw new Error("Identifier with more than one letter or wrong type name");
-
-            w = new Id(Tag.ID, s) ;
-            words .put (s, w) ;
+            Id w = (Id) words.get(s);
+            if (w != null) return w;    //if the id is already in the symbol table
+            w = new Id(Tag.ID, s);
+            words.put(s, w);
             return w;
         }
 
-        //If the token is a potential number
-        if ( Character. isDigit (peek) ) {
+        //If the token is a number
+        if (Character.isDigit(peek)) {
 
-            String type="int";
-            StringBuffer b = new StringBuffer();
+            String type = "int";
+            StringBuilder b = new StringBuilder();
             do {
-                b.append (peek) ;
-                peek = (char)in. read() ;
-            }while ( Character. isDigit (peek) ) ; // first digit is anyway added
+                b.append(peek);
+                readch();
+            } while (Character.isDigit(peek)); // first digit is anyway added
 
-            if(peek=='.'){
-                type="float";
+            if (peek == '.') {  //if it's a float
+                type = "float";
                 do {
-                    b.append (peek) ;
-                    peek = (char)in. read() ;
+                    b.append(peek);
+                    readch();
 
-                }while ( Character. isDigit (peek) ) ;
-            } // decimal dot for floating point numbers
+                } while (Character.isDigit(peek));
+            }
 
-            return new Num(Tag.NUM,b.toString(),type) ;
+            return new Num(Tag.NUM, b.toString(), type);
         }
 
-        Token t = new Token(peek) ;
-        peek = ' ' ;
+        Token t = new Token(peek);
+        peek = ' ';
         return t;
     }
 }
