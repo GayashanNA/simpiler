@@ -169,7 +169,7 @@ public class Parser {
             match(';');
             Node.used = new ArrayList<Node>(); // new set of nodes for new S
             Node.tempvarcount = 0;
-            System.out.println("//result: " + stackMachine.pop());
+            System.out.println("\t//result: " + stackMachine.pop());
             L1();
         } else {
             throw new Error("syntax error at line" + lex.line);
