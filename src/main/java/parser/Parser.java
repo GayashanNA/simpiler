@@ -29,7 +29,7 @@ public class Parser {
         this.stackMachine = new StackMachine();
         this.lookahead = lex.scan();
         this.symbols  = new ArrayList<Token>();
-        this.bw = new BufferedWriter(new FileWriter("compile.txt"));
+        this.bw = new BufferedWriter(new FileWriter("compile.out"));
         symbols.add(lookahead);
         topToken++;
     }
@@ -38,6 +38,7 @@ public class Parser {
         if (lookahead.tag == Tag.INT || lookahead.tag == Tag.FLOAT) {
             D();
             L();
+            bw.flush();
             bw.close();
         } else {
             throw new Error("syntax error at line " + lex.line);
@@ -45,10 +46,10 @@ public class Parser {
     }
 
     public void D() throws IOException {
-        String temp;
+        String type;
         if (lookahead.tag == Tag.INT || lookahead.tag == Tag.FLOAT) {
-            temp = B();
-            N(temp);
+            type = B();
+            N(type);
             match(';');
             D1();
         } else {
@@ -69,7 +70,6 @@ public class Parser {
         if (lookahead.tag == Tag.INT) {
             match(Tag.INT);
             type = "int";
-
         } else if (lookahead.tag == Tag.FLOAT) {
             match(Tag.FLOAT);
             type = "float";
@@ -80,12 +80,11 @@ public class Parser {
     }
 
     public void N(String btype) throws IOException {
-
-        String inh = btype;
+        String inh = btype;     //inherited type from B
         if (lookahead.tag == Tag.ID) {
             id = (Id) lookahead;
             id.type = inh;
-            System.out.println(id.type);
+            System.out.println("("+id.lexeme+":"+id.type+")");
             match(Tag.ID);
             N1(inh);
         } else {
@@ -99,7 +98,7 @@ public class Parser {
             match(',');
             id = (Id) lookahead;
             id.type = inh;
-            System.out.println(id.type);
+            System.out.println("("+id.lexeme+":"+id.type+")");
             match(Tag.ID);
             N1(inh);
         } else {
@@ -113,11 +112,10 @@ public class Parser {
             match(';');
             AbsNode.used = new ArrayList<AbsNode>(); // new set of nodes for new S
             AbsNode.statVal = 0;
-            System.out.println(";" + " " + stackMachine.pop());
+            System.out.println("//result: " + stackMachine.pop());
             L1();
         } else {
             throw new Error("syntax error at line" + lex.line);
-
         }
     }
 
@@ -132,14 +130,14 @@ public class Parser {
         AbsNode node;
         AbsNode exprn;
         Id assId;
-        if (lookahead.tag == '(' || lookahead.tag == Tag.NUM) {
+        if (lookahead.tag == '(' || lookahead.tag == Tag.NUM) {     //S -> E
             node = E();
-        } else if (lookahead.tag == Tag.ID) {
-            id = (Id) lookahead;     // id matches in both id=E and E
-            assId = id; //save id before it is modified by other methods
+        } else if (lookahead.tag == Tag.ID) {           //S -> id = E | E
+            id = (Id) lookahead;     // id matches in both id = E and E
+            assId = id; //save id
             System.out.print(id.lexeme);
             match(Tag.ID);
-            if (lookahead.tag == '=') {  //implies the production is id=E
+            if (lookahead.tag == '=') {  //implies the production is id = E
                 match('=');
                 stackMachine.addToMachine(Float.toString(id.value)); //pass the id to the stack
                 exprn = E(); // returns the node of nonterminal Expr
