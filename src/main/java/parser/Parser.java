@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 /**
  * Conducts parsing, evaluation and 3AC generation
+ *
  * @author gayashan
  */
 public class Parser {
@@ -35,8 +36,9 @@ public class Parser {
     }
 
 
-    /***
+    /**
      * Match and get the next lookahead
+     *
      * @param tagType
      * @throws IOException
      */
@@ -53,8 +55,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * P -> D L
+     *
      * @throws IOException
      */
     public void P() throws IOException {
@@ -68,8 +71,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * D -> B N ; D1
+     *
      * @throws IOException
      */
     public void D() throws IOException {
@@ -84,8 +88,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * D1 -> D | empty
+     *
      * @throws IOException
      */
     public void D1() throws IOException {
@@ -96,8 +101,9 @@ public class Parser {
 
     }
 
-    /***
+    /**
      * B -> int | float
+     *
      * @return
      * @throws IOException
      */
@@ -115,8 +121,9 @@ public class Parser {
         return type;
     }
 
-    /***
+    /**
      * N -> id N1
+     *
      * @param btype
      * @throws IOException
      */
@@ -132,8 +139,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * N1 -> , id N1 | empty
+     *
      * @param ntype
      * @throws IOException
      */
@@ -150,8 +158,9 @@ public class Parser {
 
     }
 
-    /***
+    /**
      * L -> S ; L1
+     *
      * @throws IOException
      */
     public void L() throws IOException {
@@ -167,8 +176,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * L1 -> L | empty
+     *
      * @throws IOException
      */
     public void L1() throws IOException {
@@ -178,8 +188,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * S -> id = E | E
+     *
      * @throws IOException
      */
     public void S() throws IOException {
@@ -211,8 +222,9 @@ public class Parser {
         }
     }
 
-    /***
+    /**
      * E -> T E1
+     *
      * @return
      * @throws IOException
      */
@@ -228,14 +240,15 @@ public class Parser {
         return node;
     }
 
-    /***
+    /**
      * E1 -> + T E1 | empty
+     *
      * @param termnodeinh
      * @return
      * @throws IOException
      */
     public AbsNode E1(AbsNode termnodeinh) throws IOException {
-        AbsNode node; // node which rerpesents the operation so far
+        AbsNode node; // node which represents the operation so far
         AbsNode snode;  // synthesised attribute which gives the full answer
         AbsNode curtn;
         if (lookahead.tag == '+') {     //E1 -> + T E1
@@ -251,8 +264,9 @@ public class Parser {
         return snode;
     }
 
-    /***
+    /**
      * T -> F T1
+     *
      * @return
      * @throws IOException
      */
@@ -268,14 +282,15 @@ public class Parser {
         return node;
     }
 
-    /***
+    /**
      * T1 -> * F T1 | empty
+     *
      * @param factnodeinh
      * @return
      * @throws IOException
      */
     public AbsNode T1(AbsNode factnodeinh) throws IOException {
-        AbsNode node; // node which rerpesents the operation so far
+        AbsNode node; // node which represents the operation so far
         AbsNode snode;  // synthesised attribute which gives the full answer
         AbsNode curfn;
         if (lookahead.tag == '*') { //T1 -> * F T1
@@ -291,8 +306,9 @@ public class Parser {
         return snode;
     }
 
-    /***
+    /**
      * F -> ( E ) | num | id
+     *
      * @return
      * @throws IOException
      */
@@ -320,9 +336,10 @@ public class Parser {
         return node;
     }
 
-    /***
+    /**
      * Get a node given its left, right nodes and the operator.
      * Widening conversions are also done here.
+     *
      * @param l
      * @param r
      * @param op
@@ -370,8 +387,9 @@ public class Parser {
         return n;
     }
 
-    /***
+    /**
      * Get the leaf node of AST
+     *
      * @param token
      * @return
      */
@@ -390,8 +408,9 @@ public class Parser {
         return l;
     }
 
-    /***
+    /**
      * Generate the 3AC using temporaries if appropriate
+     *
      * @param inNode
      * @throws IOException
      */
@@ -463,19 +482,19 @@ public class Parser {
         }
     }
 
-    /***
-     *
+    /**
      * @param n
      * @param maxtype
-     * @return  returns true if a widening conversion should be done
+     * @return returns true if a widening conversion should be done
      */
     private boolean widen(AbsNode n, String maxtype) {
         return !maxtype.equals(n.type);
     }
 
-    /***
+    /**
      * Get the maximum type given two nodes
      * Used for widening conversions.
+     *
      * @param l
      * @param r
      * @return
