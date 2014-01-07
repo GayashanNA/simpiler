@@ -1,7 +1,7 @@
 package parser;
 
 import evaluator.StackMachine;
-import inter.AbsNode;
+import inter.IntermediateNode;
 import inter.Leaf;
 import inter.Node;
 import lexer.*;
@@ -167,8 +167,8 @@ public class Parser {
         if (lookahead.tag == Tag.ID || lookahead.tag == '(' || lookahead.tag == Tag.NUM) {  //L -> S ; L1
             S();
             match(';');
-            AbsNode.used = new ArrayList<AbsNode>(); // new set of nodes for new S
-            AbsNode.tempvarcount = 0;
+            Node.used = new ArrayList<Node>(); // new set of nodes for new S
+            Node.tempvarcount = 0;
             System.out.println("//result: " + stackMachine.pop());
             L1();
         } else {
@@ -194,8 +194,8 @@ public class Parser {
      * @throws IOException
      */
     public void S() throws IOException {
-        AbsNode node;
-        AbsNode exprn;
+        Node node;
+        Node exprn;
         Id assId;
         if (lookahead.tag == '(' || lookahead.tag == Tag.NUM) {     //S -> E
             node = E();
@@ -228,9 +228,9 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    public AbsNode E() throws IOException {
-        AbsNode node;
-        AbsNode termnode;
+    public Node E() throws IOException {
+        Node node;
+        Node termnode;
         if (lookahead.tag == Tag.ID || lookahead.tag == '(' || lookahead.tag == Tag.NUM) {  //E -> T E1
             termnode = T();
             node = E1(termnode);
@@ -247,10 +247,10 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    public AbsNode E1(AbsNode termnodeinh) throws IOException {
-        AbsNode node; // node which represents the operation so far
-        AbsNode snode;  // synthesised attribute which gives the full answer
-        AbsNode curtn;
+    public Node E1(Node termnodeinh) throws IOException {
+        Node node; // node which represents the operation so far
+        Node snode;  // synthesised attribute which gives the full answer
+        Node curtn;
         if (lookahead.tag == '+') {     //E1 -> + T E1
             match('+');
             curtn = T();
@@ -270,9 +270,9 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    public AbsNode T() throws IOException {
-        AbsNode node;
-        AbsNode factnode;
+    public Node T() throws IOException {
+        Node node;
+        Node factnode;
         if (lookahead.tag == Tag.ID || lookahead.tag == '(' || lookahead.tag == Tag.NUM) {  //T -> F T1
             factnode = F();
             node = T1(factnode);
@@ -289,10 +289,10 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    public AbsNode T1(AbsNode factnodeinh) throws IOException {
-        AbsNode node; // node which represents the operation so far
-        AbsNode snode;  // synthesised attribute which gives the full answer
-        AbsNode curfn;
+    public Node T1(Node factnodeinh) throws IOException {
+        Node node; // node which represents the operation so far
+        Node snode;  // synthesised attribute which gives the full answer
+        Node curfn;
         if (lookahead.tag == '*') { //T1 -> * F T1
             match('*');
             curfn = F();
@@ -312,8 +312,8 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    public AbsNode F() throws IOException {
-        AbsNode node;
+    public Node F() throws IOException {
+        Node node;
         if (lookahead.tag == '(') {     //F -> ( E )
             match('(');
             node = E();
@@ -346,11 +346,11 @@ public class Parser {
      * @return
      * @throws IOException
      */
-    public Node getNode(AbsNode l, AbsNode r, String op) throws IOException {
-        Node n;
-        for (int i = 0; i < AbsNode.used.size(); i++) {
-            if (AbsNode.used.get(i) instanceof Node) {
-                n = (Node) AbsNode.used.get(i);
+    public IntermediateNode getNode(Node l, Node r, String op) throws IOException {
+        IntermediateNode n;
+        for (int i = 0; i < Node.used.size(); i++) {
+            if (Node.used.get(i) instanceof IntermediateNode) {
+                n = (IntermediateNode) Node.used.get(i);
                 if (n.op.equals(op) && l == n.left && r == n.right) {
                     return n;
                 }
@@ -358,32 +358,32 @@ public class Parser {
         }
         if (!op.equals("=")) { // widen is done for both operands if not assignment
             if (widen(l, typeMax(l, r))) {
-                AbsNode.tempvarcount++;
-                l = new Node("(float)", l, null);
+                Node.tempvarcount++;
+                l = new IntermediateNode("(float)", l, null);
                 l.type = "float";
                 generate3AC(l);
             }
             if (widen(r, typeMax(l, r))) {
-                AbsNode.tempvarcount++;
-                r = new Node("(float)", r, null);
+                Node.tempvarcount++;
+                r = new IntermediateNode("(float)", r, null);
                 r.type = "float";
                 generate3AC(r);
             }
         } else { // if assignment only right side is updated
             if (widen(r, typeMax(l, r))) {
-                AbsNode.tempvarcount++;
-                r = new Node("(float)", r, null);
+                Node.tempvarcount++;
+                r = new IntermediateNode("(float)", r, null);
                 r.type = "float";
                 generate3AC(r);
             }
         }
-        AbsNode.tempvarcount++; //give a new number to the temperory
-        n = new Node(op, l, r);
+        Node.tempvarcount++; //give a new number to the temporary var
+        n = new IntermediateNode(op, l, r);
         if (!n.op.equals("=")) {
             n.type = typeMax(l, r);  // in assignment we can't change type
         }
         generate3AC(n);
-        AbsNode.used.add(n);
+        Node.used.add(n);
         return n;
     }
 
@@ -395,16 +395,16 @@ public class Parser {
      */
     public Leaf getLeaf(Token token) {
         Leaf l;
-        for (int i = 0; i < AbsNode.used.size(); i++) {
-            if (AbsNode.used.get(i) instanceof Leaf) {
-                l = (Leaf) AbsNode.used.get(i);
+        for (int i = 0; i < Node.used.size(); i++) {
+            if (Node.used.get(i) instanceof Leaf) {
+                l = (Leaf) Node.used.get(i);
                 if (token == (l.token))
                     return l;
             }
         }
         l = new Leaf(token);
         l.type = token.type;
-        AbsNode.used.add(l);
+        Node.used.add(l);
         return l;
     }
 
@@ -414,13 +414,13 @@ public class Parser {
      * @param inNode
      * @throws IOException
      */
-    private void generate3AC(AbsNode inNode) throws IOException {
+    private void generate3AC(Node inNode) throws IOException {
         Leaf l;
-        Node n;
+        IntermediateNode n;
         Id id, assId;
         Num num;
         String leftstr, rightstr;
-        n = (Node) inNode;
+        n = (IntermediateNode) inNode;
         if (n.right != null) {
             if (!n.op.equals("=")) {
                 leftstr = "t" + n.left.value;
@@ -487,7 +487,7 @@ public class Parser {
      * @param maxtype
      * @return returns true if a widening conversion should be done
      */
-    private boolean widen(AbsNode n, String maxtype) {
+    private boolean widen(Node n, String maxtype) {
         return !maxtype.equals(n.type);
     }
 
@@ -499,7 +499,7 @@ public class Parser {
      * @param r
      * @return
      */
-    private String typeMax(AbsNode l, AbsNode r) {
+    private String typeMax(Node l, Node r) {
         String max = "int";
         if (r.type.equals("float") || l.type.equals("float")) {
             max = "float";
