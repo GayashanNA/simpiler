@@ -9,8 +9,8 @@ public class Id extends Token {
 
     public Id(int t, String s) {
         super(t);
-        lexeme = new String(s);
-        super.lexeme=lexeme;
-        value=0;
+        lexeme = s;
+        super.lexeme = lexeme;
+        value = 0;
     }
 }

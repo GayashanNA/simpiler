@@ -3,7 +3,7 @@ package lexer;
 /**
  * @author gayashan
  */
-public class Type extends Token{
+public class Type extends Token {
     public int width = 0;
     public String lexeme;
 
@@ -16,10 +16,7 @@ public class Type extends Token{
     public static final Type Int = new Type("int", Tag.INT, 4), Float = new Type("float", Tag.FLOAT, 8);
 
     public static boolean numeric(Type p) {
-        if (p == Type.Int || p == Type.Float) {
-            return true;
-        }
-        return false;
+        return p == Type.Int || p == Type.Float;
     }
 
     public static Type max(Type p1, Type p2) {
