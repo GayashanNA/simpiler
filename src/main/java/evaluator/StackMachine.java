@@ -6,7 +6,7 @@ import java.util.Stack;
  * @author gayashan
  */
 public class StackMachine {
-    private Stack machine;
+    private final Stack machine;
     private float top;
 
     public StackMachine() {
@@ -14,10 +14,18 @@ public class StackMachine {
 
     }
 
-    public Object pop(){
+    /***
+     * Returns the top of the stack
+     * @return
+     */
+    public Object pop() {
         return this.machine.pop();
     }
 
+    /***
+     * Push a num/id to Stack, if it's an operator evaluate and push back
+     * @param s
+     */
     public void addToMachine(String s) {
         float op1, op2;
         if (s.equals("+")) {
@@ -38,18 +46,11 @@ public class StackMachine {
         }
     }
 
-    public float evalMachine() {
-        String s;
-        while (!machine.empty()) {
-            s = (String) machine.pop();
-            if (s.equals("+") || s.equals("*")) {
-
-            }
-        }
-        return 0;
-    }
-
-    public float getTop(){
+    /***
+     * Returns the top of the stack
+     * @return
+     */
+    public float getTop() {
         return this.top;
     }
 }
